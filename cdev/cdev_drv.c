@@ -11,11 +11,14 @@
 
 #define CDEV_DRV_MAJOR 231
 
-char buffer[128];
+#define BUFFER_MAX_SIZE_ 28
+
+char buffer[BUFFER_MAX_SIZE_];
 
 static int cdev_drv_open(struct inode *inode,struct file *fp)
 {
     printk(KERN_ALERT"Open Successful!\n");
+    printk(KERN_ALERT"Open Successful! BUFFER_MAX_SIZE_  %d \n", BUFFER_MAX_SIZE_ );
     return 0;
 }
 
@@ -27,13 +30,11 @@ static int cdev_drv_release(struct inode *inode,struct file *fp)
 
 static ssize_t cdev_drv_read(struct file *fp,char __user *buf,size_t size,loff_t *pos)
 {
-    int ret = 0 ;
+    int ret = -EFAULT;
     unsigned int count = size;
-    if (copy_to_user(buf,buffer,count))
-    {
-        ret = -EFAULT;
-    }
-    else
+    if (BUFFER_MAX_SIZE_ < size)
+        count = BUFFER_MAX_SIZE_;
+    if (!copy_to_user(buf,buffer,count))
     {
         printk(KERN_ALERT"read %d bytes ...\n",count);
         ret = count;
@@ -42,13 +43,12 @@ static ssize_t cdev_drv_read(struct file *fp,char __user *buf,size_t size,loff_t
 }
 static ssize_t cdev_drv_write(struct file *fp,const char __user *buf,size_t size,loff_t *pos)
 {
-    int ret = 0;
+    int ret = -EFAULT;
     unsigned int count = size;
-    if (copy_from_user(buffer,buf,count))
-    {
-        ret = -EFAULT;
-    }
-    else
+    if (BUFFER_MAX_SIZE_ < size)
+        count = BUFFER_MAX_SIZE_;
+    printk(KERN_ALERT"Received %d \n", count);
+    if (!copy_from_user(buffer,buf,count))
     {
         printk(KERN_ALERT"Received %d bytes : %s\n",count,buffer);
         ret = count;
@@ -70,6 +70,7 @@ static int __init cdev_drv_init(void)
     int ret;
 
     printk("cdev_drv module is starting..\n");
+    printk(KERN_ALERT"Open Successful! BUFFER_MAX_SIZE_  %d \n", BUFFER_MAX_SIZE_ );
 
     ret = register_chrdev(CDEV_DRV_MAJOR,"MYDEV",&cdev_drv_fops);
     if(ret < 0)

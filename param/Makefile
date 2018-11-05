@@ -1,6 +1,6 @@
 ifeq ($(KERNELRELEASE),)
 
-KERNELDIR ?= /usr/src/linux-headers-3.16.0-30-generic/
+KERNELDIR ?= /usr/src/linux-headers-4.4.0-116-generic/
 PWD :=$(shell pwd)
 
 modules:
